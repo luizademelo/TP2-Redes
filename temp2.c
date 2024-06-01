@@ -6,9 +6,7 @@
 #include <netinet/in.h>
 #include <unistd.h>
 #include <pthread.h>
-#include <semaphore.h>
 
-sem_t x;
 pthread_t tid;
 pthread_t tid2;
 pthread_t threads[100];
@@ -45,10 +43,8 @@ const char *clube_da_luta[] = {
 
 void *sendSentences(void *param)
 {
-
     int cnt = 0;
     int num = (int)param;
-
     while (cnt < 5)
     {
         int nbytes = sendto(server_socket, selected[cnt], 100, 0, (struct sockaddr *)&client_address[num], sizeof(client_address[num]));
@@ -59,7 +55,6 @@ void *sendSentences(void *param)
         sleep(3);
         cnt++;
     }
-    pthread_exit(NULL);
 }
 
 void *printNumClients(void *args)
@@ -113,12 +108,6 @@ int main(int argc, const char *argv[])
 
         // printf("%s\n", msg);
 
-        if (strcmp(msg, "0") == 0)
-        {
-            num_clients--;
-            continue;
-        }
-
         if (strcmp(msg, "1") == 0)
         {
             selected = senhor_dos_aneis;
@@ -132,7 +121,7 @@ int main(int argc, const char *argv[])
             selected = clube_da_luta;
         }
 
-        if (0 != pthread_create(&threads[++num_clients], NULL, sendSentences, num_clients))
+        if (0 != pthread_create(&threads[num_clients++], NULL, sendSentences, num_clients - 1))
         {
             logexit("pthread_create");
         }

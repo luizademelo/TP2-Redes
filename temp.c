@@ -19,7 +19,7 @@ int server_socket;
 int server_socket, port, nbytes, err, option;
 char msg[100];
 struct sockaddr_in server_address;
-struct sockaddr_in client_address[100];
+struct sockaddr_in client_address;
 int address_size = sizeof(server_address);
 
 const char *senhor_dos_aneis[] = {
@@ -43,15 +43,23 @@ const char *clube_da_luta[] = {
     "É apenas depois de perder tudo que somos livres para fazer qualquer coisa",
     "Escolha suas lutas com sabedoria"};
 
+typedef struct
+{
+    int socket;
+    int escolha; // Opção escolhida pelo cliente
+    int frase;   // Última frase exibida
+    struct sockaddr_in address;
+    const **selected;
+} client_info;
+
 void *sendSentences(void *param)
 {
 
     int cnt = 0;
-    int num = (int)param;
-
+    client_info *client = (client_info *)param;
     while (cnt < 5)
     {
-        int nbytes = sendto(server_socket, selected[cnt], 100, 0, (struct sockaddr *)&client_address[num], sizeof(client_address[num]));
+        int nbytes = sendto(server_socket, client->selected[cnt], 100, 0, (struct sockaddr *)&client->address, sizeof(struct sockaddr_in));
         if (nbytes < 0)
         {
             logexit("sendto");
@@ -105,7 +113,7 @@ int main(int argc, const char *argv[])
 
     while (1)
     {
-        nbytes = recvfrom(server_socket, msg, 100, 0, (struct sockaddr *)&client_address[num_clients], &address_size);
+        nbytes = recvfrom(server_socket, msg, 100, 0, (struct sockaddr *)&client_address, &address_size);
         if (nbytes < 0)
         {
             logexit("recvfrom");
@@ -118,7 +126,6 @@ int main(int argc, const char *argv[])
             num_clients--;
             continue;
         }
-
         if (strcmp(msg, "1") == 0)
         {
             selected = senhor_dos_aneis;
@@ -131,8 +138,12 @@ int main(int argc, const char *argv[])
         {
             selected = clube_da_luta;
         }
+        client_info client;
+        client.address = client_address;
+        client.escolha = atoi(msg);
+        client.selected = selected;
 
-        if (0 != pthread_create(&threads[++num_clients], NULL, sendSentences, num_clients))
+        if (0 != pthread_create(&threads[++num_clients], NULL, sendSentences, &client))
         {
             logexit("pthread_create");
         }
