@@ -5,6 +5,19 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <unistd.h>
+#include <pthread.h>
+
+pthread_t tid;
+pthread_t tid2;
+pthread_t threads[100];
+int num_clients = 0;
+const **selected;
+int server_socket;
+
+int server_socket, port, nbytes, err, option;
+char msg[100];
+struct sockaddr_in server_address, client_address;
+int address_size = sizeof(server_address);
 
 const char *senhor_dos_aneis[] = {
     "Um anel para a todos governar",
@@ -26,6 +39,31 @@ const char *clube_da_luta[] = {
     "O que você possui acabará possuindo você",
     "É apenas depois de perder tudo que somos livres para fazer qualquer coisa",
     "Escolha suas lutas com sabedoria"};
+
+void *sendSentences(void *param)
+{
+    int cnt = 0;
+    while (cnt < 5)
+    {
+        int nbytes = sendto(server_socket, selected[cnt], 100, 0, (struct sockaddr *)&client_address, sizeof(client_address));
+        if (nbytes < 0)
+        {
+            logexit("sendto");
+        }
+        sleep(3);
+        cnt++;
+    }
+}
+
+void *printNumClients(void *args)
+{
+    while (1)
+    {
+        printf("Clientes: %d\n", num_clients);
+        sleep(4);
+    }
+}
+
 void logexit(const char *msg)
 {
     perror(msg);
@@ -34,11 +72,6 @@ void logexit(const char *msg)
 
 int main(int argc, const char *argv[])
 {
-
-    int server_socket, port, nbytes, err, option;
-    char msg[100];
-    struct sockaddr_in server_address, client_address;
-    int address_size = sizeof(server_address);
 
     port = atoi(argv[2]);
 
@@ -60,9 +93,11 @@ int main(int argc, const char *argv[])
         logexit("bind");
     }
 
+    pthread_create(&tid2, NULL, printNumClients, NULL);
+    // pthread_join(tid2, NULL);
+
     while (1)
     {
-        printf("waiting\n");
         nbytes = recvfrom(server_socket, msg, 100, 0, (struct sockaddr *)&client_address, &address_size);
         if (nbytes < 0)
         {
@@ -70,9 +105,6 @@ int main(int argc, const char *argv[])
         }
 
         // printf("%s\n", msg);
-
-        int cnt = 0;
-        const **selected;
 
         if (strcmp(msg, "1") == 0)
         {
@@ -87,17 +119,15 @@ int main(int argc, const char *argv[])
             selected = clube_da_luta;
         }
 
-        while (cnt < 5)
+        if (0 != pthread_create(&tid, NULL, sendSentences, NULL))
         {
-            nbytes = sendto(server_socket, selected[cnt], 100, 0, (struct sockaddr *)&client_address, sizeof(client_address));
-            sleep(3);
-            cnt++;
+            logexit("pthread_create");
         }
 
-        if (nbytes < 0)
-        {
-            logexit("sendto");
-        }
+        num_clients++;
+
+        // pthread_join(tid, NULL);
+
         // printf("opt: %d\n", option);
     }
 
