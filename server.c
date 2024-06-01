@@ -8,6 +8,14 @@
 #include <pthread.h>
 #include <semaphore.h>
 
+typedef struct
+{
+    int socket;
+    const **escolha; // Opção escolhida pelo cliente
+    struct sockaddr_in address;
+    int frase; // Última frase exibida
+} client_info;
+
 sem_t x;
 pthread_t tid;
 pthread_t tid2;
@@ -19,7 +27,7 @@ int server_socket;
 int server_socket, port, nbytes, err, option;
 char msg[100];
 struct sockaddr_in server_address;
-struct sockaddr_in client_address[100];
+client_info client_address[100];
 int address_size = sizeof(server_address);
 
 const char *senhor_dos_aneis[] = {
@@ -51,7 +59,7 @@ void *sendSentences(void *param)
 
     while (cnt < 5)
     {
-        int nbytes = sendto(server_socket, selected[cnt], 100, 0, (struct sockaddr *)&client_address[num], sizeof(client_address[num]));
+        int nbytes = sendto(server_socket, client_address[num].escolha[cnt], 100, 0, (struct sockaddr *)&client_address[num].address, sizeof(client_address[num].address));
         if (nbytes < 0)
         {
             logexit("sendto");
@@ -105,7 +113,7 @@ int main(int argc, const char *argv[])
 
     while (1)
     {
-        nbytes = recvfrom(server_socket, msg, 100, 0, (struct sockaddr *)&client_address[num_clients], &address_size);
+        nbytes = recvfrom(server_socket, msg, 100, 0, (struct sockaddr *)&client_address[num_clients].address, &address_size);
         if (nbytes < 0)
         {
             logexit("recvfrom");
@@ -131,6 +139,8 @@ int main(int argc, const char *argv[])
         {
             selected = clube_da_luta;
         }
+
+        client_address[num_clients].escolha = selected;
 
         if (0 != pthread_create(&threads[++num_clients], NULL, sendSentences, num_clients))
         {
