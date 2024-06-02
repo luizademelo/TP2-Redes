@@ -10,8 +10,8 @@
 typedef struct
 {
     int socket;
-    int escolha; // Opção escolhida pelo cliente
-    int frase;   // Última frase exibida
+    const char **escolha; // Opção escolhida pelo cliente
+    struct sockaddr_in address;
 } client_info;
 
 int option, nbytes;
@@ -69,17 +69,17 @@ void *client_thread(void *args)
 
         sprintf(msg, "%d", option);
 
-        if (option == 0)
-        {
-            close(client.socket);
-            exit(EXIT_SUCCESS);
-        }
-
         nbytes = sendto(client.socket, msg, 100, 0, (struct sockaddr *)&server_address, sizeof(server_address));
 
         if (nbytes < 0)
         {
             logexit("sendto");
+        }
+
+        if (option == 0)
+        {
+            close(client.socket);
+            exit(EXIT_SUCCESS);
         }
 
         int cnt = 0;

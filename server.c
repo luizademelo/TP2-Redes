@@ -11,9 +11,8 @@
 typedef struct
 {
     int socket;
-    const **escolha; // Opção escolhida pelo cliente
+    const char **escolha; // Opção escolhida pelo cliente
     struct sockaddr_in address;
-    int frase; // Última frase exibida
 } client_info;
 
 sem_t x;
@@ -21,7 +20,7 @@ pthread_t tid;
 pthread_t tid2;
 pthread_t threads[100];
 int num_clients = 0;
-const **selected;
+char **selected;
 int server_socket;
 
 int server_socket, port, nbytes, err, option;
@@ -51,10 +50,18 @@ const char *clube_da_luta[] = {
     "É apenas depois de perder tudo que somos livres para fazer qualquer coisa",
     "Escolha suas lutas com sabedoria"};
 
+void logexit(const char *msg)
+{
+    perror(msg);
+    exit(EXIT_FAILURE);
+}
+
 void *sendSentences(void *param)
 {
 
     int cnt = 0;
+    // int *arg = (int *)param;
+    // int num = *arg;
     int num = (int)param;
 
     while (cnt < 5)
@@ -77,12 +84,6 @@ void *printNumClients(void *args)
         printf("Clientes: %d\n", num_clients);
         sleep(4);
     }
-}
-
-void logexit(const char *msg)
-{
-    perror(msg);
-    exit(EXIT_FAILURE);
 }
 
 int main(int argc, const char *argv[])
