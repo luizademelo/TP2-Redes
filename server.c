@@ -56,24 +56,63 @@ void logexit(const char *msg)
     exit(EXIT_FAILURE);
 }
 
+int receiveClientOption(int num)
+{
+    nbytes = recvfrom(server_socket, msg, 100, 0, (struct sockaddr *)&client_address[num].address, &address_size);
+    if (nbytes < 0)
+    {
+        logexit("recvfrom");
+    }
+
+    // printf("%s\n", msg);
+
+    if (strcmp(msg, "0") == 0)
+    {
+        num_clients--;
+        return 0;
+    }
+
+    if (strcmp(msg, "1") == 0)
+    {
+        selected = senhor_dos_aneis;
+    }
+    if (strcmp(msg, "2") == 0)
+    {
+        selected = o_poderoso_chefao;
+    }
+    if (strcmp(msg, "3") == 0)
+    {
+        selected = clube_da_luta;
+    }
+    client_address[num].escolha = selected;
+
+    return 1;
+}
+
 void *sendSentences(void *param)
 {
 
-    int cnt = 0;
-    // int *arg = (int *)param;
-    // int num = *arg;
     int num = (int)param;
-
-    while (cnt < 5)
+    do
     {
-        int nbytes = sendto(server_socket, client_address[num].escolha[cnt], 100, 0, (struct sockaddr *)&client_address[num].address, sizeof(client_address[num].address));
-        if (nbytes < 0)
+        // while (receiveClientOption(num) != 0)
+        // {
+        int cnt = 0;
+        // int *arg = (int *)param;
+        // int num = *arg;
+
+        while (cnt < 5)
         {
-            logexit("sendto");
+            int nbytes = sendto(server_socket, client_address[num].escolha[cnt], 100, 0, (struct sockaddr *)&client_address[num].address, sizeof(client_address[num].address));
+            if (nbytes < 0)
+            {
+                logexit("sendto");
+            }
+            sleep(3);
+            cnt++;
         }
-        sleep(3);
-        cnt++;
-    }
+        // }
+    } while (receiveClientOption(num));
     pthread_exit(NULL);
 }
 
@@ -114,34 +153,11 @@ int main(int argc, const char *argv[])
 
     while (1)
     {
-        nbytes = recvfrom(server_socket, msg, 100, 0, (struct sockaddr *)&client_address[num_clients].address, &address_size);
-        if (nbytes < 0)
-        {
-            logexit("recvfrom");
-        }
 
-        // printf("%s\n", msg);
-
-        if (strcmp(msg, "0") == 0)
+        if (receiveClientOption(num_clients) == 0)
         {
-            num_clients--;
             continue;
         }
-
-        if (strcmp(msg, "1") == 0)
-        {
-            selected = senhor_dos_aneis;
-        }
-        if (strcmp(msg, "2") == 0)
-        {
-            selected = o_poderoso_chefao;
-        }
-        if (strcmp(msg, "3") == 0)
-        {
-            selected = clube_da_luta;
-        }
-
-        client_address[num_clients].escolha = selected;
 
         if (0 != pthread_create(&threads[++num_clients], NULL, sendSentences, num_clients))
         {
