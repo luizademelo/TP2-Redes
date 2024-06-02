@@ -6,6 +6,7 @@
 #include <netinet/in.h>
 #include <pthread.h>
 #include <time.h>
+#include "common.h"
 
 typedef struct
 {
@@ -18,6 +19,7 @@ int option, nbytes;
 char msg[100];
 int port;
 char *IPAddress;
+char *proto;
 struct sockaddr_in address, server_address;
 int address_size = sizeof(server_address);
 client_info client;
@@ -49,19 +51,14 @@ void *client_thread(void *args)
     srand(time(NULL));
     int random = 10000 + rand() % 50000;
     address.sin_port = htons(random);
-    printf("%d\n", random);
 
     if (0 != bind(client.socket, (struct sockaddr *)&address, sizeof(address)))
     {
         logexit("bind");
     }
 
-    // identificação do servidor
+    server_sockaddr_init(proto, &server_address, port);
 
-    memset(&server_address, 0, sizeof(server_address));
-    server_address.sin_family = AF_INET;
-    server_address.sin_addr.s_addr = inet_addr(IPAddress);
-    server_address.sin_port = htons(port);
     do
     {
         printMovieMenu();
@@ -112,6 +109,7 @@ int main(int argc, const char *argv[])
 
     port = atoi(argv[3]);
     IPAddress = argv[2];
+    proto = argv[1];
 
     if (0 != pthread_create(&tid, NULL, client_thread, NULL))
     {
@@ -120,7 +118,6 @@ int main(int argc, const char *argv[])
 
     pthread_join(tid, NULL);
 
-    printf("terminei\n");
     close(client.socket);
 
     return 0;

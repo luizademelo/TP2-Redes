@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <semaphore.h>
+#include "common.h"
 
 typedef struct
 {
@@ -143,12 +144,7 @@ int main(int argc, const char *argv[])
         logexit("socket");
     }
 
-    // identificação local
-
-    memset(&server_address, 0, sizeof(server_address));
-    server_address.sin_family = AF_INET;
-    server_address.sin_addr.s_addr = INADDR_ANY;
-    server_address.sin_port = htons(port);
+    server_sockaddr_init(argv[1], &server_address, port);
 
     if (0 > bind(server_socket, (struct sockaddr *)&server_address, sizeof(server_address)))
     {
