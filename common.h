@@ -8,4 +8,5 @@
 #include <pthread.h>
 #include <semaphore.h>
 
-int server_sockaddr_init(const char *proto, struct sockaddr_storage *storage, int port);
+int sockaddr_init(const char *proto, struct sockaddr_storage *storage, int port);
+void logexit(const char *msg);

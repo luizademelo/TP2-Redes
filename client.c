@@ -20,16 +20,12 @@ char msg[100];
 int port;
 char *IPAddress;
 char *proto;
-struct sockaddr_in address, server_address;
-int address_size = sizeof(server_address);
+// struct sockaddr_in address, server_address;
+struct sockaddr_storage storage;
+struct sockaddr_storage server_storage;
+int address_size = sizeof(storage);
 client_info client;
 pthread_t tid;
-
-void logexit(const char *msg)
-{
-    perror(msg);
-    exit(EXIT_FAILURE);
-}
 
 void printMovieMenu()
 {
@@ -41,23 +37,39 @@ void printMovieMenu()
     printf("-----------------------------------\n");
 }
 
+// int client_sockaddr_init(char *proto, struct sockaddr_storage *storage)
+// {
+//     int port = 10000 + rand() % 50000;
+//     // identificação local
+//     memset(storage, 0, sizeof(storage));
+
+//     if (strcmp(proto, "ipv4") == 0)
+//     {
+//         struct sockaddr_in *address = (struct sockaddr_in *)storage;
+//         address->sin_family = AF_INET;
+//         address->sin_addr.s_addr = INADDR_ANY;
+//         address->sin_port = htons(port); // host to network short
+//     }
+//     else if (strcmp(proto, "ipv6") == 0)
+//     {
+//         struct sockaddr_in6 *address = (struct sockaddr_in6 *)storage;
+//         address->sin6_family = AF_INET6;
+//         address->sin6_addr = in6addr_any;
+//         address->sin6_port = htons(port); // host to network short
+//     }
+//     else
+//     {
+//         return -1;
+//     }
+// }
+
 void *client_thread(void *args)
 {
-    // identificação local
 
-    memset(&address, 0, sizeof(address));
-    address.sin_family = AF_INET;
-    address.sin_addr.s_addr = INADDR_ANY;
-    srand(time(NULL));
-    int random = 10000 + rand() % 50000;
-    address.sin_port = htons(random);
-
-    if (0 != bind(client.socket, (struct sockaddr *)&address, sizeof(address)))
+    if (0 != bind(client.socket, (struct sockaddr *)&storage, sizeof(storage)))
     {
         logexit("bind");
     }
-
-    server_sockaddr_init(proto, &server_address, port);
 
     do
     {
@@ -66,7 +78,7 @@ void *client_thread(void *args)
 
         sprintf(msg, "%d", option);
 
-        nbytes = sendto(client.socket, msg, 100, 0, (struct sockaddr *)&server_address, sizeof(server_address));
+        nbytes = sendto(client.socket, msg, 100, 0, (struct sockaddr *)&server_storage, sizeof(server_storage));
 
         if (nbytes < 0)
         {
@@ -83,7 +95,7 @@ void *client_thread(void *args)
 
         while (cnt < 5)
         {
-            nbytes = recvfrom(client.socket, msg, 100, 0, (struct sockaddr *)&server_address, &address_size);
+            nbytes = recvfrom(client.socket, msg, 100, 0, (struct sockaddr *)&server_storage, &address_size);
 
             if (nbytes < 0)
             {
@@ -101,15 +113,19 @@ void *client_thread(void *args)
 int main(int argc, const char *argv[])
 {
 
-    client.socket = socket(AF_INET, SOCK_DGRAM, 0);
+    port = atoi(argv[3]);
+    IPAddress = argv[2];
+    proto = argv[1];
+    srand(time(NULL));
+    int random = 10000 + rand() % 50000;
+    sockaddr_init(proto, &storage, random);
+    sockaddr_init(proto, &server_storage, port);
+
+    client.socket = socket(storage.ss_family, SOCK_DGRAM, 0);
     if (client.socket < 0)
     {
         logexit("socket");
     }
-
-    port = atoi(argv[3]);
-    IPAddress = argv[2];
-    proto = argv[1];
 
     if (0 != pthread_create(&tid, NULL, client_thread, NULL))
     {

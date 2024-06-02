@@ -53,12 +53,6 @@ const char *clube_da_luta[] = {
     "É apenas depois de perder tudo que somos livres para fazer qualquer coisa",
     "Escolha suas lutas com sabedoria"};
 
-void logexit(const char *msg)
-{
-    perror(msg);
-    exit(EXIT_FAILURE);
-}
-
 int receiveClientOption(int num)
 {
     nbytes = recvfrom(server_socket, msg, 100, 0, (struct sockaddr *)&client_address[num].address, &address_size);
@@ -112,7 +106,7 @@ void *sendSentences(void *param)
 
         while (cnt < 5)
         {
-            int nbytes = sendto(server_socket, client_address[num].escolha[cnt], 100, 0, (struct sockaddr *)&client_address[num].address, sizeof(client_address[num].address));
+            int nbytes = sendto(server_socket, client_address[num].escolha[cnt], 100, 0, (struct sockaddr *)&client_address[num].address, sizeof(storage));
             if (nbytes < 0)
             {
                 logexit("sendto");
@@ -139,9 +133,9 @@ int main(int argc, const char *argv[])
 
     port = atoi(argv[2]);
 
-    server_sockaddr_init(argv[1], &storage, port);
+    sockaddr_init(argv[1], &storage, port);
 
-    server_socket = socket(AF_INET, SOCK_DGRAM, 0);
+    server_socket = socket(storage.ss_family, SOCK_DGRAM, 0);
     if (server_socket < 0)
     {
         logexit("socket");

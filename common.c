@@ -9,24 +9,32 @@
 #include <semaphore.h>
 #include "common.h"
 
-int server_sockaddr_init(const char *proto, struct sockaddr_storage *storage, int port)
+void logexit(const char *msg)
+{
+    perror(msg);
+    exit(EXIT_FAILURE);
+}
+
+int sockaddr_init(const char *proto, struct sockaddr_storage *storage, int port)
 {
     // identificação local
     memset(storage, 0, sizeof(storage));
 
     if (strcmp(proto, "ipv4") == 0)
     {
-        struct sockaddr_in *server_address = (struct sockaddr_in *)storage;
-        server_address->sin_family = AF_INET;
-        server_address->sin_addr.s_addr = INADDR_ANY;
-        server_address->sin_port = htons(port); // host to network short
+        struct sockaddr_in *address = (struct sockaddr_in *)storage;
+        address->sin_family = AF_INET;
+        address->sin_addr.s_addr = INADDR_ANY;
+        address->sin_port = htons(port); // host to network short
     }
     else if (strcmp(proto, "ipv6") == 0)
     {
-        struct sockaddr_in6 *server_address = (struct sockaddr_in6 *)storage;
-        server_address->sin6_family = AF_INET6;
-        server_address->sin6_addr = in6addr_any;
-        server_address->sin6_port = htons(port); // host to network short
+        struct in6_addr inaddr6;
+        struct sockaddr_in6 *address = (struct sockaddr_in6 *)storage;
+        address->sin6_family = AF_INET6;
+        address->sin6_port = htons(port); // host to network short
+        address->sin6_addr = in6addr_any;
+        // memcpy(&(address->sin6_addr), &inaddr6, sizeof(inaddr6));
     }
     else
     {

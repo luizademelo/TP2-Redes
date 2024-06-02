@@ -4,6 +4,9 @@
         "stdlib.h": "c",
         "inet.h": "c",
         "time.h": "c",
-        "pthread.h": "c"
+        "pthread.h": "c",
+        "common.h": "c",
+        "unistd.h": "c",
+        "semaphore.h": "c"
     }
 }
