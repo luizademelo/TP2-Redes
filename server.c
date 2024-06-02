@@ -19,6 +19,7 @@ sem_t x;
 pthread_t tid;
 pthread_t tid2;
 pthread_t threads[100];
+int connected[100];
 int num_clients = 0;
 char **selected;
 int server_socket;
@@ -86,6 +87,12 @@ int receiveClientOption(int num)
     }
     client_address[num].escolha = selected;
 
+    if (connected[num] == 1)
+    {
+        num_clients--;
+    }
+
+    connected[num] = 1;
     return 1;
 }
 
