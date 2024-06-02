@@ -9,23 +9,24 @@
 #include <semaphore.h>
 #include "common.h"
 
-int server_sockaddr_init(const char *proto, struct sockaddr_in *server_address, int port)
+int server_sockaddr_init(const char *proto, struct sockaddr_storage *storage, int port)
 {
     // identificação local
-    memset(server_address, 0, sizeof(server_address));
+    memset(storage, 0, sizeof(storage));
 
     if (strcmp(proto, "ipv4") == 0)
     {
+        struct sockaddr_in *server_address = (struct sockaddr_in *)storage;
         server_address->sin_family = AF_INET;
         server_address->sin_addr.s_addr = INADDR_ANY;
-        server_address->sin_port = htons(port);
+        server_address->sin_port = htons(port); // host to network short
     }
     else if (strcmp(proto, "ipv6") == 0)
     {
-        // server_address = (struct sockaddr_in6)server_address;
-        // server_address.sin_family = AF_INET6;
-        // server_address.sin_addr.s_addr = INADDR_ANY;
-        // server
+        struct sockaddr_in6 *server_address = (struct sockaddr_in6 *)storage;
+        server_address->sin6_family = AF_INET6;
+        server_address->sin6_addr = in6addr_any;
+        server_address->sin6_port = htons(port); // host to network short
     }
     else
     {

@@ -27,9 +27,10 @@ int server_socket;
 
 int server_socket, port, nbytes, err, option;
 char msg[100];
-struct sockaddr_in server_address;
+// struct sockaddr_in server_address;
+struct sockaddr_storage storage;
 client_info client_address[100];
-int address_size = sizeof(server_address);
+int address_size = sizeof(storage);
 
 const char *senhor_dos_aneis[] = {
     "Um anel para a todos governar",
@@ -138,15 +139,15 @@ int main(int argc, const char *argv[])
 
     port = atoi(argv[2]);
 
+    server_sockaddr_init(argv[1], &storage, port);
+
     server_socket = socket(AF_INET, SOCK_DGRAM, 0);
     if (server_socket < 0)
     {
         logexit("socket");
     }
 
-    server_sockaddr_init(argv[1], &server_address, port);
-
-    if (0 > bind(server_socket, (struct sockaddr *)&server_address, sizeof(server_address)))
+    if (0 > bind(server_socket, (struct sockaddr *)&storage, sizeof(storage)))
     {
         logexit("bind");
     }
