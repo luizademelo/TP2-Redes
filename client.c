@@ -106,7 +106,6 @@ void *client_thread(void *args)
 
             cnt++;
         }
-
     } while (option != 0);
 }
 

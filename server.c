@@ -83,10 +83,10 @@ int receiveClientOption(int num)
     }
     client_address[num].escolha = selected;
 
-    if (connected[num] == 1)
-    {
-        num_clients--;
-    }
+    // if (connected[num] == 1)
+    // {
+    //     num_clients--;
+    // }
 
     connected[num] = 1;
     return 1;
@@ -96,8 +96,8 @@ void *sendSentences(void *param)
 {
 
     int num = (int)param;
-    do
-    {
+    // do
+    // {
         // while (receiveClientOption(num) != 0)
         // {
         int cnt = 0;
@@ -115,7 +115,8 @@ void *sendSentences(void *param)
             cnt++;
         }
         // }
-    } while (receiveClientOption(num));
+    // } while (receiveClientOption(num));
+    num_clients--; 
     pthread_exit(NULL);
 }
 
