@@ -20,7 +20,6 @@ sem_t x;
 pthread_t tid;
 pthread_t tid2;
 pthread_t threads[100];
-int connected[100];
 int num_clients = 0, num = 0;
 char **selected;
 int server_socket;
@@ -29,7 +28,7 @@ int server_socket, port, nbytes, err, option;
 char msg[100];
 // struct sockaddr_in server_address;
 struct sockaddr_storage storage;
-client_info client_address[100];
+client_info client_address[1000];
 int address_size = sizeof(storage);
 
 const char *senhor_dos_aneis[] = {
@@ -80,12 +79,6 @@ int receiveClientOption(int num)
     }
     client_address[num].escolha = selected;
 
-    // if (connected[num] == 1)
-    // {
-    //     num_clients--;
-    // }
-
-    connected[num] = 1;
     return 1;
 }
 
@@ -93,13 +86,7 @@ void *sendSentences(void *param)
 {
 
     int num = (int)param;
-    // do
-    // {
-    // while (receiveClientOption(num) != 0)
-    // {
     int cnt = 0;
-    // int *arg = (int *)param;
-    // int num = *arg;
 
     while (cnt < 5)
     {
@@ -111,8 +98,7 @@ void *sendSentences(void *param)
         sleep(3);
         cnt++;
     }
-    // }
-    // } while (receiveClientOption(num));
+
     num_clients--;
     pthread_exit(NULL);
 }
@@ -145,12 +131,11 @@ int main(int argc, const char *argv[])
     }
 
     pthread_create(&tid2, NULL, printNumClients, NULL);
-    // pthread_join(tid2, NULL);
 
     while (1)
     {
 
-        if (receiveClientOption(num_clients) == 0)
+        if (receiveClientOption(num) == 0)
         {
             continue;
         }
@@ -160,12 +145,6 @@ int main(int argc, const char *argv[])
         {
             logexit("pthread_create");
         }
-
-        // num_clients++;
-
-        // pthread_join(tid, NULL);
-
-        // printf("opt: %d\n", option);
     }
 
     close(server_socket);

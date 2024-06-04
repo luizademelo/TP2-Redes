@@ -37,32 +37,6 @@ void printMovieMenu()
     printf("-----------------------------------\n");
 }
 
-// int client_sockaddr_init(char *proto, struct sockaddr_storage *storage)
-// {
-//     int port = 10000 + rand() % 50000;
-//     // identificação local
-//     memset(storage, 0, sizeof(storage));
-
-//     if (strcmp(proto, "ipv4") == 0)
-//     {
-//         struct sockaddr_in *address = (struct sockaddr_in *)storage;
-//         address->sin_family = AF_INET;
-//         address->sin_addr.s_addr = INADDR_ANY;
-//         address->sin_port = htons(port); // host to network short
-//     }
-//     else if (strcmp(proto, "ipv6") == 0)
-//     {
-//         struct sockaddr_in6 *address = (struct sockaddr_in6 *)storage;
-//         address->sin6_family = AF_INET6;
-//         address->sin6_addr = in6addr_any;
-//         address->sin6_port = htons(port); // host to network short
-//     }
-//     else
-//     {
-//         return -1;
-//     }
-// }
-
 void *client_thread(void *args)
 {
 
