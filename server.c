@@ -65,7 +65,7 @@ int receiveClientOption(int num)
 
     if (strcmp(msg, "0") == 0)
     {
-        num_clients--;
+        // num_clients--;
         return 0;
     }
 

@@ -117,6 +117,7 @@ int main(int argc, const char *argv[])
     proto = argv[1];
     srand(time(NULL));
     int random = 10000 + rand() % 50000;
+    
     sockaddr_init(proto, &storage, random);
     sockaddr_init(proto, &server_storage, port);
 
