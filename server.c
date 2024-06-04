@@ -21,7 +21,7 @@ pthread_t tid;
 pthread_t tid2;
 pthread_t threads[100];
 int connected[100];
-int num_clients = 0;
+int num_clients = 0, num = 0;
 char **selected;
 int server_socket;
 
@@ -61,11 +61,8 @@ int receiveClientOption(int num)
         logexit("recvfrom");
     }
 
-    // printf("%s\n", msg);
-
     if (strcmp(msg, "0") == 0)
     {
-        // num_clients--;
         return 0;
     }
 
@@ -98,25 +95,25 @@ void *sendSentences(void *param)
     int num = (int)param;
     // do
     // {
-        // while (receiveClientOption(num) != 0)
-        // {
-        int cnt = 0;
-        // int *arg = (int *)param;
-        // int num = *arg;
+    // while (receiveClientOption(num) != 0)
+    // {
+    int cnt = 0;
+    // int *arg = (int *)param;
+    // int num = *arg;
 
-        while (cnt < 5)
+    while (cnt < 5)
+    {
+        int nbytes = sendto(server_socket, client_address[num].escolha[cnt], 100, 0, (struct sockaddr *)&client_address[num].address, sizeof(storage));
+        if (nbytes < 0)
         {
-            int nbytes = sendto(server_socket, client_address[num].escolha[cnt], 100, 0, (struct sockaddr *)&client_address[num].address, sizeof(storage));
-            if (nbytes < 0)
-            {
-                logexit("sendto");
-            }
-            sleep(3);
-            cnt++;
+            logexit("sendto");
         }
-        // }
+        sleep(3);
+        cnt++;
+    }
+    // }
     // } while (receiveClientOption(num));
-    num_clients--; 
+    num_clients--;
     pthread_exit(NULL);
 }
 
@@ -157,8 +154,9 @@ int main(int argc, const char *argv[])
         {
             continue;
         }
+        num++;
 
-        if (0 != pthread_create(&threads[++num_clients], NULL, sendSentences, num_clients))
+        if (0 != pthread_create(&threads[++num_clients], NULL, sendSentences, num - 1))
         {
             logexit("pthread_create");
         }
